@@ -1,7 +1,17 @@
-import { bucket } from "./storage";
+import { loadConfig } from './config';
 
-export const myApi = new sst.aws.Function("MyApi", {
-  url: true,
-  link: [bucket],
-  handler: "packages/functions/src/api.handler"
+const config = loadConfig();
+
+const api = new sst.aws.ApiGatewayV2('MMASApi', {
+  domain: {
+    name: config.domain,
+    path: 'v1',
+    cert: config.certificateArn,
+  },
 });
+
+api.route('POST /signup', {
+  handler: 'packages/functions/src/api.handler',
+});
+
+export { api };
