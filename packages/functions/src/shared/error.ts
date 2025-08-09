@@ -1,14 +1,6 @@
+import { BaseError } from '@mmas/core';
 import { APIGatewayProxyResult } from 'aws-lambda';
 import { ZodError } from 'zod';
-
-export class BaseError extends Error {
-  constructor(
-    message: string,
-    readonly statusCode: number,
-  ) {
-    super(message);
-  }
-}
 
 export const logErrorAndFormat = (error: unknown): APIGatewayProxyResult => {
   if (error instanceof BaseError) {

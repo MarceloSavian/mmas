@@ -3,7 +3,7 @@ import { z } from 'zod';
 export const authRoles = z.enum(['CODER', 'ADMIN']);
 export type AuthRoles = z.infer<typeof authRoles>;
 
-export const signupSchema = z.object({
+export const accountSchema = z.object({
   username: z
     .string()
     .min(3, 'Username must be at least 3 characters')
@@ -15,12 +15,17 @@ export const signupSchema = z.object({
 
   email: z.string().email('Invalid email format').max(254, 'Email must be at most 254 characters'),
 
+  password: z.string(),
+
+  role: authRoles,
+});
+export type AccountSchema = z.infer<typeof accountSchema>;
+
+export const signupSchema = accountSchema.extend({
   password: z
     .string()
     .min(8, 'Password must be at least 8 characters')
     .max(128, 'Password must be at most 128 characters'),
-
-  role: authRoles,
 });
 
 export type SignupInput = z.infer<typeof signupSchema>;
