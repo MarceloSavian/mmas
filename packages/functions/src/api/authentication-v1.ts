@@ -2,15 +2,17 @@ import { APIGatewayProxyEventV2, APIGatewayProxyResult } from 'aws-lambda';
 import { ProxyRoute } from '../domain/proxy';
 import { IAuthenticationProxy } from '../domain/authentication-proxy';
 import { logErrorAndFormat } from '../shared/error';
+import { signupSchema } from '@mmas/core';
 
 class Authentication {
   static async signup(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyResult> {
     try {
       const body = JSON.parse(event.body ?? '{}');
+      const input = signupSchema.parse(body);
 
       return {
         statusCode: 200,
-        body: JSON.stringify(body),
+        body: JSON.stringify(input),
       };
     } catch (error) {
       return logErrorAndFormat(error);
