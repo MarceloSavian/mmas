@@ -1,0 +1,12 @@
+{
+  "name": "@mmas/functions",
+  "version": "0.0.0",
+  "type": "module",
+  "dependencies": {
+    "@mmas/core": "*",
+    "sst": "*"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8"
+  }
+}
