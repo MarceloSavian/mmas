@@ -1,4 +1,5 @@
 import { loadConfig } from './config';
+import { mmasTable } from './database';
 
 const config = loadConfig();
 
@@ -8,6 +9,7 @@ const api = new sst.aws.ApiGatewayV2('MMASApi', {
     path: 'v1',
     cert: config.certificateArn,
   },
+  link: [mmasTable],
 });
 
 api.route('POST /signup', {

@@ -11,7 +11,9 @@
     }
   },
   "dependencies": {
-    "sst": "*"
+    "@aws-sdk/lib-dynamodb": "^3.864.0",
+    "sst": "*",
+    "uuid": "^11.1.0"
   },
   "devDependencies": {
     "vitest": "^2"
