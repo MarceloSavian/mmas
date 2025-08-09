@@ -12,10 +12,12 @@
   },
   "dependencies": {
     "@aws-sdk/lib-dynamodb": "^3.864.0",
+    "bcrypt": "^6.0.0",
     "sst": "*",
     "uuid": "^11.1.0"
   },
   "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
     "vitest": "^2"
   }
 }
