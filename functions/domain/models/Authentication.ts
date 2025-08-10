@@ -24,13 +24,18 @@ export const accountSchema = baseAccount.extend({
 export type AccountSchema = z.infer<typeof accountSchema>;
 
 export const loginResponse = z.object({
-  accessToken: z.string(),
-  expiresIn: z.number(),
-  tokenType: z.enum(['Bearer']),
-  user: accountSchema.omit({ password: true }),
+  mfaRequired: z.boolean(),
+  otpId: z.string(),
 });
-export type LoginResponse = z.infer<typeof loginResponse>;
 
+// export const loginResponse = z.object({
+//   accessToken: z.string(),
+//   expiresIn: z.number(),
+//   tokenType: z.enum(['Bearer']),
+//   user: accountSchema.omit({ password: true }),
+// });
+// export type LoginResponse = z.infer<typeof loginResponse>;
+//
 const password = z
   .string()
   .min(8, 'Password must be at least 8 characters')

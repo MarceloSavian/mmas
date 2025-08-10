@@ -9,12 +9,22 @@ import { BaseError } from '../../shared/error';
 import { IAuthenticationRepository } from '../domain/AuthenticationRepository';
 import { IHasher } from '../domain/Hasher';
 import { IJwtBuilder } from '../domain/JwtBuilder';
+import { IOtpRepository } from '../domain/OtpRepository';
+import * as crypto from 'crypto';
+
+//TO-DO move to a different file or either a adapter if it makes sense
+function generateOtp(): string {
+  const buffer = crypto.randomBytes(4);
+  const number = buffer.readUInt32BE() % 1_000_000;
+  return number.toString().padStart(6, '0');
+}
 
 export class AuthenticationService implements IAuthenticationService {
   constructor(
     private readonly authenticationRepostory: IAuthenticationRepository,
     private readonly hasher: IHasher,
     private readonly jwtBuilder: IJwtBuilder,
+    private readonly otpRepository: IOtpRepository,
   ) {}
 
   async signup(input: SignupInput): Promise<AccountSchema> {
@@ -48,15 +58,22 @@ export class AuthenticationService implements IAuthenticationService {
 
     if (!isPasswordValid) throw new BaseError('Invalid credentials', 400);
 
-    const EXPIRES_IN = 60 * 60;
+    const createdAt = new Date().getTime();
+    const expiresAt = createdAt + 60 * 60;
+    const otpNumber = generateOtp();
 
-    const jwtData = this.jwtBuilder.encrypt({ id: user.id, role: user.role }, EXPIRES_IN);
+    const otpHash = await this.hasher.hash(otpNumber);
 
-    return loginResponse.parse({
-      accessToken: jwtData,
-      expiresIn: EXPIRES_IN,
-      tokenType: 'Bearer',
-      user,
-    });
+    const otp = await this.otpRepository.insert({ createdAt, expiresAt, otpHash, userId: user.id });
+    // const EXPIRES_IN = 60 * 60;
+    //
+    // const jwtData = this.jwtBuilder.encrypt({ id: user.id, role: user.role }, EXPIRES_IN);
+    //
+    // return loginResponse.parse({
+    //   accessToken: jwtData,
+    //   expiresIn: EXPIRES_IN,
+    //   tokenType: 'Bearer',
+    //   user,
+    // });
   }
 }

@@ -1,5 +1,6 @@
 import { loadConfig } from './config';
 import { mmasTable } from './database';
+import { emailSES } from './email';
 import { jwtSecret } from './secrets';
 
 const config = loadConfig();
@@ -10,7 +11,7 @@ const api = new sst.aws.ApiGatewayV2('MMASApi', {
     path: 'v1',
     cert: config.certificateArn,
   },
-  link: [mmasTable, jwtSecret],
+  link: [mmasTable, jwtSecret, emailSES],
 });
 
 api.route('POST /signup', {

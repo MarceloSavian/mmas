@@ -14,6 +14,7 @@ export default $config({
     const storage = await import('./infra/storage');
     await import('./infra/database');
     await import('./infra/secrets');
+    await import('./infra/email');
     await import('./infra/api');
 
     return {
