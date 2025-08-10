@@ -1,7 +1,7 @@
-import bcrypt from 'bcrypt';
 import { IHasher } from '../../data/domain/Hasher';
+import bcrypt from 'bcryptjs';
 
-export class BcryptAdapter implements IHasher {
+export class Hasher implements IHasher {
   constructor(private readonly salt: number) {}
 
   async hash(value: string): Promise<string> {

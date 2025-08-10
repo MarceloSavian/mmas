@@ -1,9 +1,4 @@
-import {
-  DynamoDBDocumentClient,
-  GetCommand,
-  PutCommand,
-  QueryCommand,
-} from '@aws-sdk/lib-dynamodb';
+import { DynamoDBDocumentClient, PutCommand, QueryCommand } from '@aws-sdk/lib-dynamodb';
 import { IAuthenticationRepository } from '../../data/domain/AuthenticationRepository';
 import { accountSchema, AccountSchema } from '../../domain/models/Authentication';
 import { v4 as uuidv4 } from 'uuid';
@@ -12,7 +7,7 @@ import { Resource } from 'sst';
 export class AuthenticationRepository implements IAuthenticationRepository {
   constructor(private readonly dynamoDb: DynamoDBDocumentClient) {}
 
-  async insert(input: AccountSchema): Promise<null> {
+  async insert(input: AccountSchema): Promise<Omit<AccountSchema, 'password'>> {
     const id = uuidv4();
 
     const item = {
@@ -31,7 +26,7 @@ export class AuthenticationRepository implements IAuthenticationRepository {
 
     await this.dynamoDb.send(command);
 
-    return null;
+    return { email: input.email, role: input.role, username: input.username };
   }
 
   async findByEmail(email: string): Promise<AccountSchema | null> {

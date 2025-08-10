@@ -1,8 +1,8 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import bcrypt from 'bcrypt';
-import { BcryptAdapter } from './Hasher';
+import { describe, it, expect, vi, beforeEach, Mock } from 'vitest';
+import bcrypt from 'bcryptjs';
+import { Hasher } from './Hasher';
 
-vi.mock('bcrypt', () => ({
+vi.mock('bcryptjs', () => ({
   default: {
     hash: vi.fn(),
     compare: vi.fn(),
@@ -13,7 +13,7 @@ describe('BcryptAdapter', () => {
   const salt = 12;
 
   const makeSut = () => {
-    const sut = new BcryptAdapter(salt);
+    const sut = new Hasher(salt);
     return { sut };
   };
 
@@ -24,7 +24,7 @@ describe('BcryptAdapter', () => {
   describe('hash()', () => {
     it('should call bcrypt.hash with correct values', async () => {
       const { sut } = makeSut();
-      (bcrypt.hash as any).mockResolvedValueOnce('hashed-value');
+      (bcrypt.hash as Mock).mockResolvedValueOnce('hashed-value');
 
       const result = await sut.hash('any-value');
 
@@ -36,7 +36,7 @@ describe('BcryptAdapter', () => {
   describe('compare()', () => {
     it('should call bcrypt.compare with correct values', async () => {
       const { sut } = makeSut();
-      (bcrypt.compare as any).mockResolvedValueOnce(true);
+      (bcrypt.compare as Mock).mockResolvedValueOnce(true);
 
       const result = await sut.compare('plain', 'hashed');
 
@@ -46,7 +46,7 @@ describe('BcryptAdapter', () => {
 
     it('should return false if bcrypt.compare returns false', async () => {
       const { sut } = makeSut();
-      (bcrypt.compare as any).mockResolvedValueOnce(false);
+      (bcrypt.compare as Mock).mockResolvedValueOnce(false);
 
       const result = await sut.compare('plain', 'hashed');
 
