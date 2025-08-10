@@ -1,12 +1,12 @@
-import { BaseError } from '@mmas/core';
 import { APIGatewayProxyResult } from 'aws-lambda';
 import { ZodError } from 'zod';
+import { BaseError } from '../../shared/error';
 
 export const logErrorAndFormat = (error: unknown): APIGatewayProxyResult => {
   if (error instanceof BaseError) {
     return {
       statusCode: error.statusCode,
-      body: error.message,
+      body: JSON.stringify({ message: error.message }),
     };
   }
   if (error instanceof ZodError) {
@@ -27,6 +27,6 @@ export const logErrorAndFormat = (error: unknown): APIGatewayProxyResult => {
   console.error(`Invalid error`, error);
   return {
     statusCode: 500,
-    body: JSON.stringify(error),
+    body: 'Sorry we had a problem',
   };
 };

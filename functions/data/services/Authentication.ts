@@ -1,4 +1,4 @@
-import { SignupInput } from '../../domain/models/Authentication';
+import { AccountSchema, SignupInput } from '../../domain/models/Authentication';
 import { IAuthenticationService } from '../../domain/usecases/Authentication';
 import { BaseError } from '../../shared/error';
 import { IAuthenticationRepository } from '../domain/AuthenticationRepository';
@@ -10,7 +10,7 @@ export class AuthenticationService implements IAuthenticationService {
     private readonly hasher: IHasher,
   ) {}
 
-  async signup(input: SignupInput): Promise<null> {
+  async signup(input: SignupInput): Promise<AccountSchema> {
     const userExists = await this.authenticationRepostory.findByEmail(input.email);
 
     if (userExists) throw new BaseError('Email already exists in the system', 400);

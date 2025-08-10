@@ -7,6 +7,7 @@ import { Hasher } from '../../infra/cryptography/Hasher';
 import { AuthenticationRepository } from '../../infra/repositories/AuthenticationRepository';
 import { AuthenticationService } from '../../data/services/Authentication';
 import { signupSchema } from '../../domain/models/Authentication';
+import { formatResponse } from '../shared/response';
 
 const hasher = new Hasher(10);
 const dynamo = new DynamoDB();
@@ -19,13 +20,9 @@ class Authentication {
       const body = JSON.parse(event.body ?? '{}');
       const input = signupSchema.parse(body);
 
-      console.log(input, 'input');
-      await authenticationService.signup(input);
+      const result = await authenticationService.signup(input);
 
-      return {
-        statusCode: 200,
-        body: 'Signed up',
-      };
+      return formatResponse(200, result);
     } catch (error) {
       return logErrorAndFormat(error);
     }

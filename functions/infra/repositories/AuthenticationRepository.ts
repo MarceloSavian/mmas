@@ -26,7 +26,7 @@ export class AuthenticationRepository implements IAuthenticationRepository {
 
     await this.dynamoDb.send(command);
 
-    return { email: input.email, role: input.role, username: input.username };
+    return { id, email: input.email, role: input.role, username: input.username };
   }
 
   async findByEmail(email: string): Promise<AccountSchema | null> {

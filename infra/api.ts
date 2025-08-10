@@ -13,7 +13,7 @@ const api = new sst.aws.ApiGatewayV2('MMASApi', {
 });
 
 api.route('POST /signup', {
-  handler: 'packages/functions/src/api/authentication-v1.handler',
+  handler: 'functions/handlers/api/authentication-v1.handler',
 });
 
 export { api };
