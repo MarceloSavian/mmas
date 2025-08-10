@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { AuthenticationService } from './Authentication';
 import { BaseError } from '../../shared/error';
-import { SignupInput } from '../../domain/models/Authentication';
+import { loginResponse, SignupInput } from '../../domain/models/Authentication';
 
 describe('AuthenticationService', () => {
   const makeSut = () => {
@@ -15,22 +15,28 @@ describe('AuthenticationService', () => {
       compare: vi.fn(),
     };
 
-    const sut = new AuthenticationService(authenticationRepository, hasher);
-
-    return { sut, authenticationRepository, hasher };
-  };
-  describe('signup()', () => {
-    const input: SignupInput = {
-      username: 'User name',
-      email: 'example@test.com',
-      password: 'password',
-      role: 'ADMIN',
+    const jwtBuilder = {
+      encrypt: vi.fn(),
+      decrypt: vi.fn(),
     };
 
-    beforeEach(() => {
-      vi.clearAllMocks();
-    });
+    const sut = new AuthenticationService(authenticationRepository, hasher, jwtBuilder);
 
+    return { sut, authenticationRepository, hasher, jwtBuilder };
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  const input: SignupInput = {
+    username: 'User name',
+    email: 'example@test.com',
+    password: 'password',
+    role: 'ADMIN',
+  };
+
+  describe('signup()', () => {
     it('should call email repository correctly', async () => {
       const { sut, authenticationRepository } = makeSut();
 
@@ -71,6 +77,51 @@ describe('AuthenticationService', () => {
         password: 'hashed-string',
       });
       expect(authenticationRepository.insert).toHaveBeenCalledTimes(1);
+    });
+  });
+  describe('login()', () => {
+    it('should throw error if user is not found', async () => {
+      const { sut, authenticationRepository } = makeSut();
+
+      authenticationRepository.findByEmail.mockResolvedValueOnce(null);
+
+      await expect(sut.login('test@test.com', '123456')).rejects.toThrow(
+        new BaseError('Invalid credentials', 400),
+      );
+    });
+
+    it('should throw error if password is invalid', async () => {
+      const { sut, authenticationRepository, hasher } = makeSut();
+
+      authenticationRepository.findByEmail.mockResolvedValueOnce(input);
+      hasher.compare.mockResolvedValueOnce(false);
+
+      await expect(sut.login('example@test.com', 'wrong-password')).rejects.toThrow(
+        new BaseError('Invalid credentials', 400),
+      );
+    });
+
+    it('should return the correct login response if credentials are valid', async () => {
+      const { sut, authenticationRepository, hasher, jwtBuilder } = makeSut();
+
+      authenticationRepository.findByEmail.mockResolvedValueOnce({ ...input, id: 'any' });
+      hasher.compare.mockResolvedValueOnce(true);
+      jwtBuilder.encrypt.mockReturnValueOnce('fake-jwt-token');
+
+      const result = await sut.login('example@test.com', 'password');
+
+      expect(authenticationRepository.findByEmail).toHaveBeenCalledWith('example@test.com');
+      expect(hasher.compare).toHaveBeenCalledWith('password', input.password);
+      expect(jwtBuilder.encrypt).toHaveBeenCalledWith({ id: 'any', role: input.role }, 3600);
+
+      const expected = loginResponse.parse({
+        accessToken: 'fake-jwt-token',
+        expiresIn: 3600,
+        tokenType: 'Bearer',
+        user: { id: 'any', ...input },
+      });
+
+      expect(result).toEqual(expected);
     });
   });
 });

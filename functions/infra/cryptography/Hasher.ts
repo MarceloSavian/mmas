@@ -1,5 +1,5 @@
 import { IHasher } from '../../data/domain/Hasher';
-import bcrypt from 'bcryptjs';
+import * as bcrypt from 'bcryptjs';
 
 export class Hasher implements IHasher {
   constructor(private readonly salt: number) {}

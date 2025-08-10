@@ -1,12 +1,10 @@
 import { describe, it, expect, vi, beforeEach, Mock } from 'vitest';
-import bcrypt from 'bcryptjs';
+import * as bcrypt from 'bcryptjs';
 import { Hasher } from './Hasher';
 
 vi.mock('bcryptjs', () => ({
-  default: {
-    hash: vi.fn(),
-    compare: vi.fn(),
-  },
+  hash: vi.fn(),
+  compare: vi.fn(),
 }));
 
 describe('BcryptAdapter', () => {

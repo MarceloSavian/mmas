@@ -16,4 +16,8 @@ api.route('POST /signup', {
   handler: 'functions/handlers/api/authentication-v1.handler',
 });
 
+api.route('POST /login', {
+  handler: 'functions/handlers/api/authentication-v1.handler',
+});
+
 export { api };
