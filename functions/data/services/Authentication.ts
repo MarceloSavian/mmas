@@ -22,6 +22,18 @@ export class AuthenticationService implements IAuthenticationService {
 
     if (userExists) throw new BaseError('Email already exists in the system', 400);
 
+    /**
+     *  TODO: I could authenticate this request here with the token
+     *  get the user information and ROLE, with that I could guarantee that only admins
+     *  create users. I believe it goes a bit out of the scope here but I would have a
+     *  object detailing the hierachy of each role
+     *
+     *  Something like this
+     *  const hierachy = { "ADMIN": ["CODER"], "SUPER_ADMIN": ["CODER", "ADMIN"] }
+     *
+     *  hierachy[user.role].includes(input.role)
+     * */
+
     const passwordHash = await this.hasher.hash(input.password);
 
     return await this.authenticationRepostory.insert({ ...input, password: passwordHash });

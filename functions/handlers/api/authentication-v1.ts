@@ -9,9 +9,10 @@ import { AuthenticationService } from '../../data/services/Authentication';
 import { loginSchema, signupSchema } from '../../domain/models/Authentication';
 import { formatResponse } from '../shared/response';
 import { JwtBuilder } from '../../infra/cryptography/JwtBuilder';
+import { Resource } from 'sst';
 
 const hasher = new Hasher(10);
-const jwtBuilder = new JwtBuilder('secret_test');
+const jwtBuilder = new JwtBuilder(Resource.JwtSecret.value);
 const dynamo = new DynamoDB();
 const authenticationRepository = new AuthenticationRepository(dynamo);
 const authenticationService = new AuthenticationService(
