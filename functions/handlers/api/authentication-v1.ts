@@ -2,7 +2,16 @@ import { APIGatewayProxyEventV2, APIGatewayProxyResult } from 'aws-lambda';
 import { ProxyRoute } from '../domain/proxy';
 import { IAuthenticationProxy } from '../domain/authentication-proxy';
 import { logErrorAndFormat } from '../shared/error';
-import { signupSchema } from '@mmas/core';
+import { DynamoDB } from '@aws-sdk/client-dynamodb';
+import { Hasher } from '../../infra/cryptography/Hasher';
+import { AuthenticationRepository } from '../../infra/repositories/AuthenticationRepository';
+import { AuthenticationService } from '../../data/services/Authentication';
+import { signupSchema } from '../../domain/models/Authentication';
+
+const hasher = new Hasher(10);
+const dynamo = new DynamoDB();
+const authenticationRepository = new AuthenticationRepository(dynamo);
+const authenticationService = new AuthenticationService(authenticationRepository, hasher);
 
 class Authentication {
   static async signup(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyResult> {
@@ -10,9 +19,12 @@ class Authentication {
       const body = JSON.parse(event.body ?? '{}');
       const input = signupSchema.parse(body);
 
+      console.log(input, 'input');
+      await authenticationService.signup(input);
+
       return {
         statusCode: 200,
-        body: JSON.stringify(input),
+        body: 'Signed up',
       };
     } catch (error) {
       return logErrorAndFormat(error);
