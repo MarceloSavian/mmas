@@ -27,6 +27,7 @@ export const loginResponse = z.object({
   mfaRequired: z.boolean(),
   otpId: z.string(),
 });
+export type LoginResponse = z.infer<typeof loginResponse>;
 
 // export const loginResponse = z.object({
 //   accessToken: z.string(),

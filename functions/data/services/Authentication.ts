@@ -63,8 +63,10 @@ export class AuthenticationService implements IAuthenticationService {
     const otpNumber = generateOtp();
 
     const otpHash = await this.hasher.hash(otpNumber);
-
     const otp = await this.otpRepository.insert({ createdAt, expiresAt, otpHash, userId: user.id });
+
+    return { mfaRequired: true, otpId: otp.id };
+
     // const EXPIRES_IN = 60 * 60;
     //
     // const jwtData = this.jwtBuilder.encrypt({ id: user.id, role: user.role }, EXPIRES_IN);

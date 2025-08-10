@@ -20,12 +20,26 @@ describe('AuthenticationService', () => {
       decrypt: vi.fn(),
     };
 
-    const sut = new AuthenticationService(authenticationRepository, hasher, jwtBuilder);
+    const otpRepository = {
+      insert: vi.fn(),
+      findById: vi.fn(),
+    };
 
-    return { sut, authenticationRepository, hasher, jwtBuilder };
+    const sut = new AuthenticationService(
+      authenticationRepository,
+      hasher,
+      jwtBuilder,
+      otpRepository,
+    );
+
+    return { sut, authenticationRepository, hasher, jwtBuilder, otpRepository };
   };
 
+  const fixedDate = new Date('2020-01-01T12:00:00Z');
+
   beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(fixedDate);
     vi.clearAllMocks();
   });
 
@@ -100,28 +114,46 @@ describe('AuthenticationService', () => {
         new BaseError('Invalid credentials', 400),
       );
     });
+    it('should create otp value and insert in the repository', async () => {
+      const { sut, authenticationRepository, hasher, otpRepository } = makeSut();
 
-    it('should return the correct login response if credentials are valid', async () => {
-      const { sut, authenticationRepository, hasher, jwtBuilder } = makeSut();
-
-      authenticationRepository.findByEmail.mockResolvedValueOnce({ ...input, id: 'any' });
+      authenticationRepository.findByEmail.mockResolvedValueOnce({ id: 'test', input });
       hasher.compare.mockResolvedValueOnce(true);
-      jwtBuilder.encrypt.mockReturnValueOnce('fake-jwt-token');
+      hasher.hash.mockResolvedValueOnce('hashed_value');
+      otpRepository.insert.mockResolvedValueOnce({ id: 'test' });
 
-      const result = await sut.login('example@test.com', 'password');
+      const result = await sut.login('test', 'test');
 
-      expect(authenticationRepository.findByEmail).toHaveBeenCalledWith('example@test.com');
-      expect(hasher.compare).toHaveBeenCalledWith('password', input.password);
-      expect(jwtBuilder.encrypt).toHaveBeenCalledWith({ id: 'any', role: input.role }, 3600);
-
-      const expected = loginResponse.parse({
-        accessToken: 'fake-jwt-token',
-        expiresIn: 3600,
-        tokenType: 'Bearer',
-        user: { id: 'any', ...input },
+      expect(otpRepository.insert).toHaveBeenCalledWith({
+        createdAt: fixedDate.getTime(),
+        expiresAt: fixedDate.getTime() + 60 * 60,
+        otpHash: 'hashed_value',
+        userId: 'test',
       });
-
-      expect(result).toEqual(expected);
+      expect(result).toStrictEqual({ mfaRequired: true, otpId: 'test' });
     });
+
+    // it('should return the correct login response if credentials are valid', async () => {
+    //   const { sut, authenticationRepository, hasher, jwtBuilder } = makeSut();
+    //
+    //   authenticationRepository.findByEmail.mockResolvedValueOnce({ ...input, id: 'any' });
+    //   hasher.compare.mockResolvedValueOnce(true);
+    //   jwtBuilder.encrypt.mockReturnValueOnce('fake-jwt-token');
+    //
+    //   const result = await sut.login('example@test.com', 'password');
+    //
+    //   expect(authenticationRepository.findByEmail).toHaveBeenCalledWith('example@test.com');
+    //   expect(hasher.compare).toHaveBeenCalledWith('password', input.password);
+    //   expect(jwtBuilder.encrypt).toHaveBeenCalledWith({ id: 'any', role: input.role }, 3600);
+    //
+    //   const expected = loginResponse.parse({
+    //     accessToken: 'fake-jwt-token',
+    //     expiresIn: 3600,
+    //     tokenType: 'Bearer',
+    //     user: { id: 'any', ...input },
+    //   });
+    //
+    //   expect(result).toEqual(expected);
+    // });
   });
 });

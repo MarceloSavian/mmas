@@ -10,15 +10,18 @@ import { loginSchema, signupSchema } from '../../domain/models/Authentication';
 import { formatResponse } from '../shared/response';
 import { JwtBuilder } from '../../infra/cryptography/JwtBuilder';
 import { Resource } from 'sst';
+import { OtpRepository } from '../../infra/repositories/OtpRepository';
 
 const hasher = new Hasher(10);
 const jwtBuilder = new JwtBuilder(Resource.JwtSecret.value);
 const dynamo = new DynamoDB();
 const authenticationRepository = new AuthenticationRepository(dynamo);
+const otpRepository = new OtpRepository(dynamo);
 const authenticationService = new AuthenticationService(
   authenticationRepository,
   hasher,
   jwtBuilder,
+  otpRepository,
 );
 
 class Authentication {
