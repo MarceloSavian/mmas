@@ -1,4 +1,9 @@
-import { DynamoDBDocumentClient, PutCommand, QueryCommand } from '@aws-sdk/lib-dynamodb';
+import {
+  DynamoDBDocumentClient,
+  GetCommand,
+  PutCommand,
+  QueryCommand,
+} from '@aws-sdk/lib-dynamodb';
 import { IAuthenticationRepository } from '../../data/domain/AuthenticationRepository';
 import { accountSchema, AccountSchema } from '../../domain/models/Authentication';
 import { v4 as uuidv4 } from 'uuid';
@@ -27,6 +32,22 @@ export class AuthenticationRepository implements IAuthenticationRepository {
     await this.dynamoDb.send(command);
 
     return { id, email: input.email, role: input.role, username: input.username };
+  }
+
+  async findById(id: string): Promise<AccountSchema | null> {
+    const command = new GetCommand({
+      TableName: Resource.MMAS.name,
+      Key: {
+        PK: `USER#${id}`,
+        SK: `USER`,
+      },
+    });
+
+    const res = await this.dynamoDb.send(command);
+
+    if (!res.Item) return null;
+
+    return accountSchema.parse(res.Item);
   }
 
   async findByEmail(email: string): Promise<AccountSchema | null> {

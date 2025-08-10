@@ -1,7 +1,8 @@
 import {
   AccountSchema,
-  loginResponse,
   LoginResponse,
+  mfaResponse,
+  MfaResponse,
   SignupInput,
 } from '../../domain/models/Authentication';
 import { IAuthenticationService } from '../../domain/usecases/Authentication';
@@ -65,17 +66,41 @@ export class AuthenticationService implements IAuthenticationService {
     const otpHash = await this.hasher.hash(otpNumber);
     const otp = await this.otpRepository.insert({ createdAt, expiresAt, otpHash, userId: user.id });
 
-    return { mfaRequired: true, otpId: otp.id };
+    /**
+     *  Since I don't have SES configured, send this email is much more difficult to configure
+     *  This is how I would do it in case I have access for that
+     *  For now, and I would never do this in production I will return the code in the response
+     *
+     * await this.emailService.sendSimple(
+     *  'Login validation',
+     *  `Your validation number for login is ${otpNumber}`,
+     *  user.email,
+     * );
+     * */
 
-    // const EXPIRES_IN = 60 * 60;
-    //
-    // const jwtData = this.jwtBuilder.encrypt({ id: user.id, role: user.role }, EXPIRES_IN);
-    //
-    // return loginResponse.parse({
-    //   accessToken: jwtData,
-    //   expiresIn: EXPIRES_IN,
-    //   tokenType: 'Bearer',
-    //   user,
-    // });
+    return { mfaRequired: true, otpId: otp.id, otpCode: otpNumber };
+  }
+
+  async mfaCheck(otpId: string, otpCode: string): Promise<MfaResponse> {
+    const otp = await this.otpRepository.findById(otpId);
+
+    if (!otp) throw new BaseError('Invalid OTP', 400);
+
+    const isOtpCorrect = await this.hasher.compare(otpCode, otp.otpHash);
+
+    if (!isOtpCorrect) throw new BaseError('Invalid OTP', 400);
+
+    const user = await this.authenticationRepostory.findById(otp.userId);
+
+    const EXPIRES_IN = 60 * 60;
+
+    const jwtData = this.jwtBuilder.encrypt({ id: user.id, role: user.role }, EXPIRES_IN);
+
+    return mfaResponse.parse({
+      accessToken: jwtData,
+      expiresIn: EXPIRES_IN,
+      tokenType: 'Bearer',
+      user,
+    });
   }
 }

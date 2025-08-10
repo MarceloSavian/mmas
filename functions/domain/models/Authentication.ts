@@ -26,17 +26,18 @@ export type AccountSchema = z.infer<typeof accountSchema>;
 export const loginResponse = z.object({
   mfaRequired: z.boolean(),
   otpId: z.string(),
+  otpCode: z.string(), //THIS SHOULD NEVER BE HERE IN PRODUCTION, IT'S FOR TESTING PURPOSES ONLY
 });
 export type LoginResponse = z.infer<typeof loginResponse>;
 
-// export const loginResponse = z.object({
-//   accessToken: z.string(),
-//   expiresIn: z.number(),
-//   tokenType: z.enum(['Bearer']),
-//   user: accountSchema.omit({ password: true }),
-// });
-// export type LoginResponse = z.infer<typeof loginResponse>;
-//
+export const mfaResponse = z.object({
+  accessToken: z.string(),
+  expiresIn: z.number(),
+  tokenType: z.enum(['Bearer']),
+  user: accountSchema.omit({ password: true }),
+});
+export type MfaResponse = z.infer<typeof mfaResponse>;
+
 const password = z
   .string()
   .min(8, 'Password must be at least 8 characters')
@@ -51,4 +52,9 @@ export type SignupInput = z.infer<typeof signupSchema>;
 export const loginSchema = z.object({
   email,
   password,
+});
+
+export const mfaRequest = z.object({
+  otpId: z.string(),
+  otpCode: z.string(),
 });

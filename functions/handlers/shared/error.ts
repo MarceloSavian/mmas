@@ -13,20 +13,20 @@ export const logErrorAndFormat = (error: unknown): APIGatewayProxyResult => {
     console.warn(`Data validation error`, error);
     return {
       statusCode: 400,
-      body: error.message,
+      body: JSON.stringify({ message: error.message }),
     };
   }
   if (error instanceof Error) {
     console.error(`Error occurred while processing the request: ${error.message}`, error);
     return {
       statusCode: 500,
-      body: 'Sorry we had a problem',
+      body: JSON.stringify({ message: 'Sorry we had a problem' }),
     };
   }
 
   console.error(`Invalid error`, error);
   return {
     statusCode: 500,
-    body: 'Sorry we had a problem',
+    body: JSON.stringify({ message: 'Sorry we had a problem' }),
   };
 };

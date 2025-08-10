@@ -6,12 +6,13 @@ import { DynamoDB } from '@aws-sdk/client-dynamodb';
 import { Hasher } from '../../infra/cryptography/Hasher';
 import { AuthenticationRepository } from '../../infra/repositories/AuthenticationRepository';
 import { AuthenticationService } from '../../data/services/Authentication';
-import { loginSchema, signupSchema } from '../../domain/models/Authentication';
+import { loginSchema, mfaRequest, signupSchema } from '../../domain/models/Authentication';
 import { formatResponse } from '../shared/response';
 import { JwtBuilder } from '../../infra/cryptography/JwtBuilder';
 import { Resource } from 'sst';
 import { OtpRepository } from '../../infra/repositories/OtpRepository';
 
+//TO-DO separate this into it's own build file
 const hasher = new Hasher(10);
 const jwtBuilder = new JwtBuilder(Resource.JwtSecret.value);
 const dynamo = new DynamoDB();
@@ -50,6 +51,19 @@ class Authentication {
       return logErrorAndFormat(error);
     }
   }
+
+  static async mfaCheck(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyResult> {
+    try {
+      const body = JSON.parse(event.body ?? '{}');
+      const input = mfaRequest.parse(body);
+
+      const result = await authenticationService.mfaCheck(input.otpId, input.otpCode);
+
+      return formatResponse(200, result);
+    } catch (error) {
+      return logErrorAndFormat(error);
+    }
+  }
 }
 
 const proxy: IAuthenticationProxy = Authentication;
@@ -57,6 +71,7 @@ const proxy: IAuthenticationProxy = Authentication;
 const routes: ProxyRoute = {
   'POST /signup': proxy.signup,
   'POST /login': proxy.login,
+  'POST /mfa-check': proxy.mfaCheck,
 };
 
 export const handler = async (event: APIGatewayProxyEventV2): Promise<APIGatewayProxyResult> => {

@@ -26,7 +26,7 @@ export class OtpRepository implements IOtpRepository {
     return otpData.parse({ id, ...data });
   }
 
-  async findById(id: string): Promise<OtpData> {
+  async findById(id: string): Promise<OtpData | null> {
     const command = new GetCommand({
       TableName: Resource.MMAS.name,
       Key: {

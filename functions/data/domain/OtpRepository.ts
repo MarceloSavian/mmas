@@ -12,5 +12,5 @@ export type OtpData = z.infer<typeof otpData>;
 
 export interface IOtpRepository {
   insert(data: Omit<OtpData, 'id'>): Promise<OtpData>;
-  findById(id: string): Promise<OtpData>;
+  findById(id: string): Promise<OtpData | null>;
 }

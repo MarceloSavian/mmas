@@ -36,6 +36,7 @@
     "vitest-dynamodb-lite": "^4.1.1"
   },
   "dependencies": {
+    "@aws-sdk/client-sesv2": "^3.864.0",
     "@aws-sdk/lib-dynamodb": "^3.864.0",
     "bcryptjs": "^3.0.2",
     "jsonwebtoken": "^9.0.2",
