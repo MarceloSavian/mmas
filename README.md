@@ -1,4 +1,4 @@
-# Person Crud Serverless
+# Authentication Serverless
 
 A serverless application built using [SST v3](https://docs.sst.dev), powered by AWS infra infrastructure including Lambda, API Gateway, Dynamo DB. The goal of this project was to build a simple authetication service and test out new technologies like SST V3.
 
